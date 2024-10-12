@@ -1,1 +1,12 @@
 make_quote
+sgx_quote
+
+root.key
+root.crt
+intermediate.key
+intermediate.csr
+intermediate.crt
+leaf.key
+leaf.csr
+leaf.crt
+openssl.cnf

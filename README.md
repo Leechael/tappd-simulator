@@ -44,3 +44,12 @@ pub fn verify_certificate_chain(
     }
 }
 ```
+
+## Usage
+
+Tested under MacOS, with gcc & openssl 3.0.
+
+```shell
+make
+dd if=/dev/urandom bs=1 count=6000 | ./make_quote
+```
