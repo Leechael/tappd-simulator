@@ -10,3 +10,5 @@ leaf.key
 leaf.csr
 leaf.crt
 openssl.cnf
+
+target

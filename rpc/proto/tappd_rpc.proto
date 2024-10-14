@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package tappd;
+
+service Tappd {
+  // Derive a key from a key path
+  // Returns a key and a certificate chain
+  rpc DeriveKey(DeriveKeyArgs) returns (DeriveKeyResponse) {}
+
+  // Get a TDX quote
+  rpc TdxQuote(TdxQuoteArgs) returns (TdxQuoteResponse) {}
+}
+
+// The request to derive a key
+message DeriveKeyArgs {
+  // Path to the key to derive
+  string path = 1;
+  // Subject of the certificate to request
+  string subject = 2;
+}
+
+// The response to a DeriveKey request
+message DeriveKeyResponse {
+  // Derived key
+  string key = 1;
+  // Certificate chain
+  repeated string certificate_chain = 2;
+}
+
+// The request to get a TDX quote
+message TdxQuoteArgs {
+  // Report data
+  bytes report_data = 1;
+}
+
+message TdxQuoteResponse {
+  // TDX quote
+  bytes quote = 1;
+  // Event log
+  string event_log = 2;
+}
+
+
+service Worker {
+  // Get worker info
+  rpc Info(google.protobuf.Empty) returns (WorkerInfo) {}
+  // Get worker containers
+  rpc ListContainers(google.protobuf.Empty) returns (ListContainersResponse) {}
+}
+
+message ListContainersResponse {
+  repeated Container containers = 1;
+}
+
+message Container {
+  // The ID of this container
+  string id = 1;
+  // The names that this container has been given
+  repeated string names = 2;
+  // The name of the image used when creating this container
+  string image = 3;
+  // The ID of the image that this container was created from
+  string image_id = 4;
+  // Command to run when starting the container
+  string command = 5;
+  // When the container was created
+  int64 created = 6;
+  // The state of this container (e.g. Exited)
+  string state = 7;
+  // The status of this container (e.g. Exited)
+  string status = 8;
+}
+
+// The request to derive a key
+message WorkerInfo {
+  // Worker ID
+  string app_id = 1;
+  // App certificate
+  string app_cert = 2;
+  // TCB info
+  string tcb_info = 3;
+}
