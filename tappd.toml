@@ -1,0 +1,20 @@
+[default]
+workers = 8
+max_blocking = 64
+ident = "Tappd Server"
+temp_dir = "/tmp"
+keep_alive = 10
+log_level = "debug"
+
+[default.core]
+cert_file = "/etc/tappd/app-ca.cert"
+key_file = "/etc/tappd/app-ca.key"
+
+[internal]
+# address = "unix:/var/run/tappd.sock"
+address = "unix:tappd.sock"
+reuse = false
+
+# [external]
+# address = "0.0.0.0"
+# port = 8090
