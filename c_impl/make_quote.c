@@ -372,6 +372,7 @@ int main() {
     ECDSA_SIG_free(sig);
     EC_POINT_free(pub_point);
     EC_KEY_free(eckey);
+    // Verify END
 
     printf("QE Report to be signed:\n");
     print_hex("QE Report", auth_data->qe_report, QE_REPORT_SIZE);
@@ -404,6 +405,7 @@ int main() {
     ECDSA_SIG_free(sig);
     EC_POINT_free(pub_point);
     EC_KEY_free(eckey);
+    // Verify END
     
     // Write quote to file
     FILE *file = fopen("sgx_quote", "wb");
@@ -430,15 +432,15 @@ int main() {
     printf("Certification Data Size: %u\n", auth_data->certification_data_size);
     
     // Clean up
-    remove("root.key");
-    remove("root.crt");
-    remove("intermediate.key");
-    remove("intermediate.csr");
-    remove("intermediate.crt");
-    remove("leaf.key");
-    remove("leaf.csr");
-    remove("leaf.crt");
-    remove("openssl.cnf");
+    // remove("root.key");
+    // remove("root.crt");
+    // remove("intermediate.key");
+    // remove("intermediate.csr");
+    // remove("intermediate.crt");
+    // remove("leaf.key");
+    // remove("leaf.csr");
+    // remove("leaf.crt");
+    // remove("openssl.cnf");
 
     return 0;
 }
