@@ -1,17 +1,18 @@
 {
-  "name": "tappd-sdk",
-  "version": "0.1.0",
-  "description": "SDK for communicating with Tappd server via Unix Domain Socket",
+  "name": "@phala/dstack-sdk",
+  "version": "0.1.1",
+  "description": "DStack SDK",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "vitest",
-    "test:ci": "vitest --run"
+    "test:ci": "vitest --run",
+    "release": "npm run build && npm publish --access public"
   },
   "keywords": ["tappd", "sdk"],
   "author": "Leechael Yim",
-  "license": "Apache",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@types/node": "latest",
     "typescript": "^4.2.2",
