@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [ main ]
+    tags:
+      - 'v*'
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -55,6 +57,12 @@ jobs:
     #   run: |
     #     cargo clean && rm -rf rpc/src/generated/*.rs && cargo fmt -- --check $(find . -name '*.rs' -type f | grep -v "/generated/")
 
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ runner.os }}-build
+        path: target/release/tappd-simulator*
+
     - name: Debug log
       if: ${{ github.event.inputs.debug_enabled == 'true' }}
       run: |
@@ -62,3 +70,60 @@ jobs:
         # 在这里添加您想要的任何额外的调试命令
         cargo --version
         rustc --version
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v2
+
+      - name: Calculate MD5 checksums
+        run: |
+          for artifact in *-build/*; do
+            md5sum "$artifact" >> checksums.md5
+          done
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./checksums.md5
+          asset_name: checksums.md5
+          asset_content_type: text/plain
+
+      - name: Upload Binaries to Release
+        uses: AButler/upload-release-assets@v2.0
+        with:
+          files: '*-build/*'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          release-tag: ${{ github.ref }}
+
+      - name: Debug log
+        if: ${{ github.event.inputs.debug_enabled == 'true' }}
+        shell: bash
+        run: |
+          echo "Debug logging enabled"
+          cargo --version
+          rustc --version
+          echo "Files being checked for formatting:"
+          find . -name '*.rs' -type f \
+            ! -path "./target/*" \
+            ! -path "*/generated/*"
+          echo "Rust edition in Cargo.toml:"
+          grep "edition" Cargo.toml
+
