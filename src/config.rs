@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use rocket::figment::{
     providers::{Format, Toml},
     Figment,
