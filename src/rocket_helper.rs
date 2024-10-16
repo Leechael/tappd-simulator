@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use rocket::{
     data::{ByteUnit, Limits, ToByteUnit},
     http::{ContentType, Status},
-    mtls::{oid::Oid, Certificate},
+    mtls::Certificate,
     response::status::Custom,
     Data,
 };
@@ -27,7 +27,7 @@ fn limit_for_method(method: &str, limits: &Limits) -> ByteUnit {
 
 pub async fn handle_prpc<State, Call: RpcCall<State>>(
     state: &State,
-    certificate: Option<Certificate<'_>>,
+    _certificate: Option<Certificate<'_>>,
     method: &str,
     data: Option<Data<'_>>,
     limits: &Limits,
@@ -37,7 +37,7 @@ pub async fn handle_prpc<State, Call: RpcCall<State>>(
     let data = match data {
         Some(data) => {
             let limit = limit_for_method(method, limits);
-            let todo = "confirm this would not truncate the data";
+            let _todo = "confirm this would not truncate the data";
             read_data(data, limit)
                 .await
                 .context("failed to read data")?

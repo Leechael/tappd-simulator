@@ -2,8 +2,7 @@ use anyhow::Result;
 use prpc::{codec::encode_message_to_vec, server::Service as PrpcService};
 use tracing::{error, info};
 
-#[cfg(feature = "rocket")]
-pub mod rocket_helper;
+// pub mod rocket_helper;
 
 pub trait RpcCall<State> {
     type PrpcService: PrpcService + Send + 'static;

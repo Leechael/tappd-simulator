@@ -1,7 +1,6 @@
 use crate::{
     rpc_service::{AppState, InternalRpcHandler},
     rocket_helper::handle_prpc,
-    rpc_call::RpcCall,
 };
 use anyhow::Result;
 use rocket::{
@@ -10,12 +9,10 @@ use rocket::{
     http::ContentType,
     mtls::Certificate,
     post,
-    response::{content::RawHtml, status::Custom},
+    response::status::Custom,
     routes, Route, State,
-    serde::json::Json,
+    // serde::json::Json,
 };
-use tappd_rpc::{worker_server::WorkerRpc, WorkerInfo};
-
 
 #[post("/prpc/<method>?<json>", data = "<data>")]
 async fn prpc_post(
