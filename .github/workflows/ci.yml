@@ -53,7 +53,7 @@ jobs:
 
     - name: Check formatting
       run: |
-        cargo fmt -- --check $(find . -name '*.rs' -type f | grep -v "/generated/")
+        cargo fmt -- --check $(find . -name '*.rs' -type f | grep -v "/generated/" | grep -v "/target/")
 
     - name: Debug log
       if: ${{ github.event.inputs.debug_enabled == 'true' }}
@@ -63,5 +63,5 @@ jobs:
         cargo --version
         rustc --version
         echo "Files being checked for formatting:"
-        find . -name '*.rs' -type f | grep -v "/generated/"
+        find . -name '*.rs' -type f | grep -v "/generated/" | grep -v "/target/"
 
