@@ -134,7 +134,8 @@ export class TappdClient {
 
   constructor(endpoint: string = '/var/run/tappd.sock') {
     if (process.env.DSTACK_SIMULATOR_ENDPOINT) {
-      console.log(`Using simulation endpoint: ${process.env.DSTACK_SIMULATOR_ENDPOINT}`)
+      console.log(`Using simulator endpoint: ${process.env.DSTACK_SIMULATOR_ENDPOINT}`)
+      endpoint = process.env.DSTACK_SIMULATOR_ENDPOINT
     }
     this.endpoint = endpoint
   }
