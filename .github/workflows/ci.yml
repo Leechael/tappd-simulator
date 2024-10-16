@@ -53,7 +53,7 @@ jobs:
 
     - name: Check formatting
       run: |
-        cargo clean && cargo fmt -- --check $(find ./src -name '*.rs' -type f)
+        cargo clean && rm -rf rpc/src && cargo fmt -- --check $(find . -name '*.rs' -type f | grep -v "/generated/")
 
     - name: Debug log
       if: ${{ github.event.inputs.debug_enabled == 'true' }}
