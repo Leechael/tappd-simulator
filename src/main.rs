@@ -9,9 +9,9 @@ use rocket::{
 use rpc_service::AppState;
 
 mod config;
-mod rpc_call;
-mod rocket_helper;
 mod http_routes;
+mod rocket_helper;
+mod rpc_call;
 mod rpc_service;
 
 #[derive(Parser)]

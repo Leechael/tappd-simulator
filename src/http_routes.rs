@@ -1,6 +1,6 @@
 use crate::{
-    rpc_service::{AppState, InternalRpcHandler},
     rocket_helper::handle_prpc,
+    rpc_service::{AppState, InternalRpcHandler},
 };
 use anyhow::Result;
 use rocket::{
@@ -10,7 +10,9 @@ use rocket::{
     mtls::Certificate,
     post,
     response::status::Custom,
-    routes, Route, State,
+    routes,
+    Route,
+    State,
     // serde::json::Json,
 };
 

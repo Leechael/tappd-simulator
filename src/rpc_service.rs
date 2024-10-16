@@ -4,14 +4,13 @@ use anyhow::Result;
 use tappd_rpc::{
     tappd_server::{TappdRpc, TappdServer},
     // Container,
-    DeriveKeyArgs, DeriveKeyResponse, TdxQuoteArgs,
+    DeriveKeyArgs,
+    DeriveKeyResponse,
+    TdxQuoteArgs,
     TdxQuoteResponse,
 };
 
-use crate::{
-    rpc_call::RpcCall,
-    config::Config,
-};
+use crate::{config::Config, rpc_call::RpcCall};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -19,7 +18,7 @@ pub struct AppState {
 }
 
 // struct AppStateInner {
-    // ca: CaCert,
+// ca: CaCert,
 // }
 
 impl AppState {
@@ -44,7 +43,10 @@ impl TappdRpc for InternalRpcHandler {
         // let cert = vec![0u8; 64];
         Ok(DeriveKeyResponse {
             key: String::from("mock_derived_key_pem"),
-            certificate_chain: vec![String::from("mock_cert_pem"), String::from("mock_ca_cert_pem")],
+            certificate_chain: vec![
+                String::from("mock_cert_pem"),
+                String::from("mock_ca_cert_pem"),
+            ],
         })
     }
 
