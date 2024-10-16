@@ -58,7 +58,7 @@ jobs:
     #     cargo clean && rm -rf rpc/src/generated/*.rs && cargo fmt -- --check $(find . -name '*.rs' -type f | grep -v "/generated/")
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ runner.os }}-build
         path: target/release/tappd-simulator*
@@ -88,7 +88,7 @@ jobs:
           prerelease: false
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
 
       - name: Calculate MD5 checksums
         run: |
