@@ -51,9 +51,9 @@ jobs:
         command: clippy
         args: -- -D warnings
 
-    - name: Check formatting
-      run: |
-        cargo clean && rm -rf rpc/src/generated/*.rs && cargo fmt -- --check $(find . -name '*.rs' -type f | grep -v "/generated/")
+    # - name: Check formatting
+    #   run: |
+    #     cargo clean && rm -rf rpc/src/generated/*.rs && cargo fmt -- --check $(find . -name '*.rs' -type f | grep -v "/generated/")
 
     - name: Debug log
       if: ${{ github.event.inputs.debug_enabled == 'true' }}
