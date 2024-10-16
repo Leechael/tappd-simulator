@@ -1,3 +1,4 @@
+#[cfg(unix)]
 use std::{fs::Permissions, os::unix::fs::PermissionsExt};
 
 use anyhow::{anyhow, Context, Result};
@@ -35,6 +36,7 @@ async fn run_internal(state: AppState, figment: Figment) -> Result<()> {
     let listener = DefaultListener::bind(&ignite)
         .await
         .map_err(|err| anyhow!("Failed to bind on {endpoint}: {err}"))?;
+    #[cfg(unix)]
     if let Some(path) = endpoint.unix() {
         // Allow any user to connect to the socket
         fs_err::set_permissions(path, Permissions::from_mode(0o777))?;
