@@ -1,9 +1,13 @@
 from typing import Optional, List, Union
 import json
 import hashlib
+import os
+import logging
 
 from pydantic import BaseModel
 import httpx
+
+logger = logging.getLogger('dstack_sdk')
 
 
 class DeriveKeyResponse(BaseModel):
@@ -22,16 +26,28 @@ def sha384_hex(input: Union[str, bytes]) -> str:
     return hashlib.sha384(input).hexdigest()
 
 
+def get_endpoint(endpoint: Union[str, None]):
+    if endpoint:
+        return endpoint
+    if "DSTACK_SIMULATOR_ENDPOINT" in os.environ:
+        logger.info(f"Using simulator endpoint: {os.environ['DSTACK_SIMULATOR_ENDPOINT']}")
+        return os.environ["DSTACK_SIMULATOR_ENDPOINT"]
+    return "/var/run/tappd.sock"
+
+
 class BaseClient:
-    def __init__(self, socket_path: Optional[str] = '/var/run/tappd.sock'):
-        self.socket_path = socket_path
-        self.base_url = f"http://localhost"
+    pass
 
 
 class TappdClient(BaseClient):
-    def __init__(self, socket_path: str = None):
-        super().__init__(socket_path)
-        self.transport = httpx.HTTPTransport(uds=socket_path)
+    def __init__(self, endpoint: str = None):
+        endpoint = get_endpoint(endpoint)
+        if endpoint.startswith("http://") or endpoint.startswith('https://'):
+            self.transport = httpx.HTTPTransport()
+            self.base_url = endpoint
+        else:
+            self.transport = httpx.HTTPTransport(uds=socket_path)
+            self.base_url = "http://localhost"
 
     def _send_rpc_request(self, path, payload):
         with httpx.Client(transport=self.transport, base_url=self.base_url) as client:
@@ -53,9 +69,14 @@ class TappdClient(BaseClient):
 
 
 class AsyncTappdClient(BaseClient):
-    def __init__(self, socket_path=None):
-        super().__init__(socket_path)
-        self.transport = httpx.AsyncHTTPTransport(uds=socket_path)
+    def __init__(self, endpoint=None):
+        endpoint = get_endpoint(endpoint)
+        if endpoint.startswith("http://") or endpoint.startswith('https://'):
+            self.transport = httpx.AsyncHTTPTransport()
+            self.base_url = endpoint
+        else:
+            self.transport = httpx.AsyncHTTPTransport(uds=socket_path)
+            self.base_url = "http://localhost"
 
     async def _send_rpc_request(self, path, payload):
         async with httpx.AsyncClient(transport=self.transport, base_url=self.base_url) as client:
