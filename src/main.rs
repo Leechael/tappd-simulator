@@ -9,18 +9,20 @@ use rocket::{
 };
 use rpc_service::AppState;
 
-mod config;
 mod http_routes;
 mod rocket_helper;
 mod rpc_call;
 mod rpc_service;
+mod ra_tls;
 
 #[derive(Parser)]
 #[command(author, version, about)]
 struct Args {
-    /// Path to the configuration file
-    #[arg(short, long)]
-    config: Option<String>,
+    #[arg(long, default_value_t = String::from("./app.crt"))]
+    cert_file: String,
+
+    #[arg(long, default_value_t = String::from("./app.key"))]
+    key_file: String,
 
     // The listen address for the server, defaults to unix:/var/run/tappd.sock under Linux,
     // and tcp:0.0.0.0:8090 under Windows & Mac
@@ -83,9 +85,7 @@ async fn main() -> Result<()> {
         .merge(("reuse", false))
         ;
 
-    let figment = config::load_config_figment(args.config.as_deref());
-    let state =
-        AppState::new(figment.focus("core").extract()?).context("Failed to create app state")?;
+    let state = AppState::new(args.cert_file, args.key_file).context("Failed to create app state")?;
 
     tokio::select!(
         res = run_internal(state.clone(), config) => res?,
