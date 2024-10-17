@@ -21,6 +21,16 @@ struct Args {
     /// Path to the configuration file
     #[arg(short, long)]
     config: Option<String>,
+
+    // The listen address for the server, defaults to unix:/var/run/tappd.sock under Linux,
+    // and tcp:0.0.0.0:8090 under Windows & Mac
+    #[arg(short, long)]
+    listen: Option<String>,
+
+    // The port to listen on, defaults to 8090. It only applies to listening on IP addresses,
+    // or once it specifies, it will auto switch to the listen mode.
+    #[arg(short, long, default_value_t = 8090)]
+    port: u16,
 }
 
 async fn run_internal(state: AppState, figment: Figment) -> Result<()> {
@@ -51,14 +61,26 @@ async fn run_internal(state: AppState, figment: Figment) -> Result<()> {
 #[rocket::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
+
+    let config = rocket::Config::figment()
+        .merge(("address", args.listen.unwrap_or_else(|| {
+            #[cfg(all(unix, not(target_os = "macos")))]
+            {
+                String::from("unix:/var/run/tappd.sock")
+            }
+            #[cfg(any(windows, target_os = "macos"))]
+            {
+                String::from("0.0.0.0")
+            }
+        })))
+        .merge(("port", args.port));
+
     let figment = config::load_config_figment(args.config.as_deref());
     let state =
         AppState::new(figment.focus("core").extract()?).context("Failed to create app state")?;
 
-    let internal_figment = figment.clone().select("internal");
-
     tokio::select!(
-        res = run_internal(state.clone(), internal_figment) => res?,
+        res = run_internal(state.clone(), config) => res?,
     );
     Ok(())
 }
