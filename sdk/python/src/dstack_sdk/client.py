@@ -3,6 +3,8 @@ import json
 import hashlib
 import os
 import logging
+import base64
+
 
 from pydantic import BaseModel
 import httpx
@@ -13,6 +15,13 @@ logger = logging.getLogger('dstack_sdk')
 class DeriveKeyResponse(BaseModel):
     key: str
     certificate_chain: List[str]
+
+    def toBytes(self, max_length: Optional[int] = None) -> bytes:
+        content = self.key.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace("\n", "")
+        binary_der = base64.b64decode(content)
+        if max_length is None:
+            max_length = len(binary_der)
+        return binary_der[:max_length]
 
 
 class TdxQuoteResponse(BaseModel):
@@ -46,7 +55,7 @@ class TappdClient(BaseClient):
             self.transport = httpx.HTTPTransport()
             self.base_url = endpoint
         else:
-            self.transport = httpx.HTTPTransport(uds=socket_path)
+            self.transport = httpx.HTTPTransport(uds=endpoint)
             self.base_url = "http://localhost"
 
     def _send_rpc_request(self, path, payload):
@@ -75,7 +84,7 @@ class AsyncTappdClient(BaseClient):
             self.transport = httpx.AsyncHTTPTransport()
             self.base_url = endpoint
         else:
-            self.transport = httpx.AsyncHTTPTransport(uds=socket_path)
+            self.transport = httpx.AsyncHTTPTransport(uds=endpoint)
             self.base_url = "http://localhost"
 
     async def _send_rpc_request(self, path, payload):
