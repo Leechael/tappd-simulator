@@ -1,9 +1,14 @@
 import net from 'net'
 import crypto from 'crypto'
+import http from 'http'
+import https from 'https'
+import { URL } from 'url'
 
 export interface DeriveKeyResponse {
   key: string
   certificate_chain: string[]
+
+  asUint8Array: (max_length?: number) => Uint8Array
 }
 
 export type Hex = `0x${string}`
@@ -13,9 +18,18 @@ export interface TdxQuoteResponse {
   event_log: string
 }
 
-import http from 'http'
-import https from 'https'
-import { URL } from 'url'
+function x509key_to_uint8array(pem: string, max_length?: number) {
+  const content = pem.replace(/-----BEGIN PRIVATE KEY-----/, '').replace(/-----END PRIVATE KEY-----/, '').replace(/\n/g, '')
+  const binaryDer = atob(content)
+  if (!max_length) {
+    max_length = binaryDer.length
+  }
+  const result = new Uint8Array(max_length)
+  for (let i = 0; i < max_length; i++) {
+    result[i] = binaryDer.charCodeAt(i)
+  }
+  return result
+}
 
 export function send_rpc_request<T = any>(endpoint: string, path: string, payload: string): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -143,6 +157,11 @@ export class TappdClient {
   async deriveKey(path: string, subject: string): Promise<DeriveKeyResponse> {
     const payload = JSON.stringify({ path, subject })
     const result = await send_rpc_request<DeriveKeyResponse>(this.endpoint, '/prpc/Tappd.DeriveKey', payload)
+    Object.defineProperty(result, 'asUint8Array', {
+      get: () => (length?: Number) => x509key_to_uint8array(result.key, length),
+      enumerable: true,
+      configurable: false,
+    })
     return Object.freeze(result)
   }
 
