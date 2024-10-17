@@ -73,7 +73,14 @@ async fn main() -> Result<()> {
                 String::from("0.0.0.0")
             }
         })))
-        .merge(("port", args.port));
+        .merge(("port", args.port))
+        .merge(("workers", 8))
+        .merge(("max_blocking", 64))
+        .merge(("ident", "Tappd Server"))
+        .merge(("temp_dir", "/tmp"))
+        .merge(("keep_alive", 10))
+        .merge(("log_level", "debug"))
+        ;
 
     let figment = config::load_config_figment(args.config.as_deref());
     let state =
