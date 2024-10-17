@@ -63,10 +63,16 @@ async fn main() -> Result<()> {
     let args = Args::parse();
 
     let config = rocket::Config::figment()
+        .merge(("workers", 8))
+        .merge(("max_blocking", 64))
+        .merge(("ident", "Tappd Server"))
+        .merge(("temp_dir", "/tmp"))
+        .merge(("keep_alive", 10))
+        .merge(("log_level", "debug"))
         .merge(("address", args.listen.unwrap_or_else(|| {
             #[cfg(all(unix, not(target_os = "macos")))]
             {
-                String::from("unix:/var/run/tappd.sock")
+                String::from("unix:tappd.sock")
             }
             #[cfg(any(windows, target_os = "macos"))]
             {
@@ -74,12 +80,7 @@ async fn main() -> Result<()> {
             }
         })))
         .merge(("port", args.port))
-        .merge(("workers", 8))
-        .merge(("max_blocking", 64))
-        .merge(("ident", "Tappd Server"))
-        .merge(("temp_dir", "/tmp"))
-        .merge(("keep_alive", 10))
-        .merge(("log_level", "debug"))
+        .merge(("reuse", false))
         ;
 
     let figment = config::load_config_figment(args.config.as_deref());
