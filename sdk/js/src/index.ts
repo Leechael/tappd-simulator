@@ -158,7 +158,7 @@ export class TappdClient {
     const payload = JSON.stringify({ path, subject })
     const result = await send_rpc_request<DeriveKeyResponse>(this.endpoint, '/prpc/Tappd.DeriveKey', payload)
     Object.defineProperty(result, 'asUint8Array', {
-      get: () => (length?: Number) => x509key_to_uint8array(result.key, length),
+      get: () => (length?: number) => x509key_to_uint8array(result.key, length),
       enumerable: true,
       configurable: false,
     })
