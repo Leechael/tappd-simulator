@@ -70,7 +70,9 @@ impl TappdRpc for InternalRpcHandler {
         })
     }
 
-    async fn tdx_quote(self, _request: TdxQuoteArgs) -> Result<TdxQuoteResponse> {
+    async fn tdx_quote(self, request: TdxQuoteArgs) -> Result<TdxQuoteResponse> {
+        let _ = reqwest::get("https://wapo-testnet.phala.network/_/quote").await;
+
         let mut runner = TestRunner::default();
 
         let mut header = <Header as Arbitrary>::arbitrary().new_tree(&mut runner).expect("Failed to create value tree").current();
@@ -78,15 +80,16 @@ impl TappdRpc for InternalRpcHandler {
         header.version = 4;
         header.tee_type = 0x00000081;
         header.attestation_key_type = 3u16;
-        let body = <TDReport10 as Arbitrary>::arbitrary()
+
+        let mut body = <TDReport10 as Arbitrary>::arbitrary()
             .new_tree(&mut runner)
             .expect("Failed to create value tree")
-            .current()
-            .encode();
+            .current();
+        body.report_data = sha2_512(&request.report_data);
 
         let mut encoded = Vec::new();
         encoded.extend(header.encode());
-        encoded.extend(body);
+        encoded.extend(body.encode());
 
         let inner = <AuthDataV4 as Arbitrary>::arbitrary()
             .new_tree(&mut runner)
@@ -119,4 +122,11 @@ impl RpcCall<AppState> for InternalRpcHandler {
             state: state.clone(),
         })
     }
+}
+
+fn sha2_512(data: &[u8]) -> [u8; 64] {
+    use sha2::{Digest, Sha512};
+    let mut hasher = Sha512::new();
+    hasher.update(data);
+    hasher.finalize().into()
 }
