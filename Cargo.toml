@@ -25,6 +25,11 @@ p256 = "0.13.2"
 ring = "0.17.8"
 rustls-pki-types = "1.8.0"
 elliptic-curve = { version = "0.13.8", features = ["pkcs8"] }
+proptest = "1.5.0"
+dcap-qvl = { git = "https://github.com/Leechael/dcap-qvl", branch = "feat-arbitrary" }
+scale = { package = "parity-scale-codec", version = "3.6.5", default-features = false, features = [
+    "derive",
+] }
 
 [workspace]
 members = ["rpc"]

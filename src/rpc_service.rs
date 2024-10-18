@@ -1,6 +1,13 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
+use proptest::{
+    arbitrary::Arbitrary,
+    strategy::{Strategy, ValueTree},
+    test_runner::TestRunner,
+};
+use scale::Encode;
+use dcap_qvl::quote::{Header, TDReport10, AuthDataV4};
 use tappd_rpc::{
     tappd_server::{TappdRpc, TappdServer},
     // Container,
@@ -64,9 +71,33 @@ impl TappdRpc for InternalRpcHandler {
     }
 
     async fn tdx_quote(self, _request: TdxQuoteArgs) -> Result<TdxQuoteResponse> {
-        // let report_data = sha2_512(&request.report_data);
+        let mut runner = TestRunner::default();
+
+        let mut header = <Header as Arbitrary>::arbitrary().new_tree(&mut runner).expect("Failed to create value tree").current();
+        // TODO: the python decoder not a full implementation.
+        header.version = 4;
+        header.tee_type = 0x00000081;
+        header.attestation_key_type = 3u16;
+        let body = <TDReport10 as Arbitrary>::arbitrary()
+            .new_tree(&mut runner)
+            .expect("Failed to create value tree")
+            .current()
+            .encode();
+
+        let mut encoded = Vec::new();
+        encoded.extend(header.encode());
+        encoded.extend(body);
+
+        let inner = <AuthDataV4 as Arbitrary>::arbitrary()
+            .new_tree(&mut runner)
+            .expect("Failed to create value tree")
+            .current()
+            .encode();
+        encoded.extend((inner.len() as u32).encode());
+        encoded.extend(inner);
+
         Ok(TdxQuoteResponse {
-            quote: vec![0u8; 64],
+            quote: encoded,
             event_log: String::from("mock_event_log"),
         })
     }
@@ -89,10 +120,3 @@ impl RpcCall<AppState> for InternalRpcHandler {
         })
     }
 }
-
-// fn sha2_512(data: &[u8]) -> [u8; 64] {
-//     use sha2::{Digest, Sha512};
-//     let mut hasher = Sha512::new();
-//     hasher.update(data);
-//     hasher.finalize().into()
-// }

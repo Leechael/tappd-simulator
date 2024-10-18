@@ -1,10 +1,11 @@
+#![allow(dead_code)]
 //! Certificate creation functions.
 
 use anyhow::{Context, Result};
 use fs_err as fs;
 use std::path::Path;
 use rcgen::{
-    BasicConstraints, Certificate, CertificateParams, CustomExtension, DistinguishedName, DnType,
+    BasicConstraints, Certificate, CertificateParams, DistinguishedName, DnType,
     IsCa, KeyPair, SanType,
 };
 // use x509_parser::der_parser::Oid;
