@@ -1,0 +1,25 @@
+[project]
+name = "dcap-attestation"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "Leechael Yim", email = "yanleech@gmail.com"},
+]
+dependencies = [
+    "evidence-api>=0.5.0",
+    "fastapi>=0.115.2",
+    "pydantic>=2.9.2",
+    "httpx>=0.27.2",
+    "httpx[socks]>=0.27.2",
+    "urlobject>=2.4.3",
+    "pendulum>=3.0.0",
+    "python-dotenv>=1.0.1",
+    "uvicorn>=0.32.0",
+    "python-multipart>=0.0.12",
+]
+requires-python = "==3.10.*"
+readme = "README.md"
+license = {text = "Apache 2.0"}
+
+[tool.pdm]
+distribution = true
