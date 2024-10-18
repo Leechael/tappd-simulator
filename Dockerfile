@@ -1,6 +1,6 @@
-FROM gcr.io/distroless/cc-debian12:nonroot
+FROM gcr.io/distroless/base-debian12:nonroot
 
-COPY ./target/release/tappd-simulator /app/tappd-simulator
+COPY ./target/x86_64-unknown-linux-musl/release/tappd-simulator /app/tappd-simulator
 COPY ./certs/* /app/certs/
 
 EXPOSE 8090
