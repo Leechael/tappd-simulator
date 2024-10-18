@@ -30,6 +30,7 @@ dcap-qvl = { git = "https://github.com/Leechael/dcap-qvl", branch = "feat-arbitr
 scale = { package = "parity-scale-codec", version = "3.6.5", default-features = false, features = [
     "derive",
 ] }
+reqwest = "0.12.8"
 
 [workspace]
 members = ["rpc"]
