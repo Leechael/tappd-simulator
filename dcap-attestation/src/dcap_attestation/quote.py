@@ -40,7 +40,9 @@ class QuoteBody(BaseModel):
     rtmr3: bytes
     reportdata: bytes
 
-    @field_serializer('mrseam', 'mrsignerseam', 'seamattributes', 'tdattributes', 'xfam', 'mrtd', 'mrconfig', 'mrowner', 'mrownerconfig', 'rtmr0', 'rtmr1', 'rtmr2', 'rtmr3', 'reportdata')
+    @field_serializer('mrseam', 'mrsignerseam', 'seamattributes', 'tdattributes', 'xfam',
+                      'mrtd', 'mrconfig', 'mrowner', 'mrownerconfig', 'rtmr0', 'rtmr1',
+                      'rtmr2', 'rtmr3', 'reportdata')
     def serialize_bytes(self, value):
         return '0x' + value.hex()
 
