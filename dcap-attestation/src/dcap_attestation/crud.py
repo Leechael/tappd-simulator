@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from . import models, quote as schemas
 import hashlib
+from . import models, quote as schemas
 
 def create_quote(db: Session, quote: schemas.Quote):
     checksum = hashlib.sha256(str(quote.dict()).encode()).hexdigest()
@@ -30,7 +30,6 @@ def create_quote(db: Session, quote: schemas.Quote):
         reportdata=quote.body.reportdata,
         cert_data=quote.cert_data
     )
-    checksum = hashlib.sha256(str(quote.dict()).encode()).hexdigest()
     db_quote.checksum = checksum
     db.add(db_quote)
     db.commit()

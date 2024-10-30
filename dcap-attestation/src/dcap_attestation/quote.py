@@ -64,7 +64,10 @@ class Quote(BaseModel):
                 user_data=tdxQuote.header.user_data,
             )
             try:
-                cert_data = tdxQuote.sig.qe_cert.cert_data.qe_cert_data.cert_data.decode('utf-8')
+                cert_data = tdxQuote.sig.qe_cert.cert_data.qe_cert_data.cert_data
+                if cert_data[-1] == 0:
+                    cert_data = cert_data[:-1]
+                cert_data = cert_data.decode('utf8')
             except:
                 cert_data = None
             body = QuoteBody(
