@@ -47,4 +47,5 @@ async def view(checksum: str, db: Session = Depends(get_db)):
     row = crud.get_quote(db, checksum)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
+    print(row.to_instance())
     return JSONResponse(content=row.to_instance().dict())

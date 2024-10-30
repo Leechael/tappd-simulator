@@ -51,6 +51,7 @@ class Quote(BaseModel):
     header: QuoteHeader
     cert_data: Optional[str]
     body: QuoteBody
+    verified: Optional[bool] = False
 
     @staticmethod
     def safeParse(raw):

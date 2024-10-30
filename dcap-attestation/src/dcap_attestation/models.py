@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, BLOB, DateTime, Enum, Text
+from sqlalchemy import Column, Integer, String, BLOB, DateTime, Enum, Text, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 import enum
@@ -53,6 +53,7 @@ class QuoteModel(Base):
     reportdata = Column(BLOB)
     cert_data = Column(Text, nullable=True)
     checksum = Column(String)
+    verified = Column(Boolean)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     def to_instance(self):
@@ -83,5 +84,6 @@ class QuoteModel(Base):
         return Quote(
             header=header,
             cert_data=self.cert_data,
-            body=body
+            body=body,
+            verified=self.verified
         )
