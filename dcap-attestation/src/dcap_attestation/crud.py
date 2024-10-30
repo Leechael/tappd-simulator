@@ -28,7 +28,8 @@ def create_quote(db: Session, quote: schemas.Quote):
         rtmr2=quote.body.rtmr2,
         rtmr3=quote.body.rtmr3,
         reportdata=quote.body.reportdata,
-        cert_data=quote.cert_data
+        cert_data=quote.cert_data,
+        verified=quote.verified
     )
     db_quote.checksum = checksum
     db.add(db_quote)
