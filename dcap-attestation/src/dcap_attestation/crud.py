@@ -6,6 +6,11 @@ def create_quote(db: Session, quote: schemas.Quote):
     checksum = hashlib.sha256(str(quote.dict()).encode()).hexdigest()
     exists = db.query(models.QuoteModel).filter(models.QuoteModel.checksum == checksum).first()
     if exists:
+        if exists.verified != quote.verified:
+            exists.verified = quote.verified
+            db.add(exists)
+            db.commit()
+            db.refresh(exists)
         return exists
     db_quote = models.QuoteModel(
         version=quote.header.version,

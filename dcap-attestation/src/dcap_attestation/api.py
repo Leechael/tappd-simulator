@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from . import crud
 from .quote import Quote
 from .database import get_db
+from .verify import verify_quote_with_collateral
 
 
 class VerificationResponse(BaseModel):
@@ -30,6 +31,7 @@ async def verify(file: UploadFile = File(...), db: Session = Depends(get_db)):
     succeed, quote = Quote.safeParse(content)
     record = VerificationResponse(success=succeed, quote=quote)
     if record.success:
+        quote.verified = verify_quote_with_collateral(content)
         row = crud.create_quote(db, quote)
         record.checksum = row.checksum
     return JSONResponse(content=record.dict())
