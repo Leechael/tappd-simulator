@@ -5,6 +5,7 @@ from fastapi import FastAPI, File, UploadFile, Depends, HTTPException
 from fastapi.responses import PlainTextResponse, JSONResponse, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 from . import crud
 from .quote import Quote
@@ -17,6 +18,7 @@ class VerificationResponse(BaseModel):
     quote: Optional[Quote] = None
     checksum: Optional[str] = None
     can_download: Optional[bool] = None
+    uploaded_at: Optional[str] = None
 
 
 app = FastAPI(root_path='/api/attestations')
@@ -47,6 +49,8 @@ async def view(checksum: str, db: Session = Depends(get_db)):
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
     d = row.to_instance().dict()
+    d['uploaded_at'] = row.created_at.isoformat()
+    d['checksum'] = row.checksum
     d['can_download'] = row.has_raw_quote
     return JSONResponse(content=d)
 
