@@ -48,3 +48,21 @@ def get_quote(db: Session, checksum: str):
 def get_quotes(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.QuoteModel).order_by(models.QuoteModel.created_at.desc()).offset(skip).limit(limit).all()
 
+def save_raw_quote(db: Session, quote: models.QuoteModel, raw):
+    exists = db.query(models.RawQuoteModel).filter(models.RawQuoteModel.checksum == quote.checksum).first()
+    if exists:
+        return None
+    db_raw_quote = models.RawQuoteModel(
+        checksum=quote.checksum,
+        content=raw
+    )
+    db.add(db_raw_quote)
+    db.commit()
+    db.refresh(db_raw_quote)
+    return db_raw_quote
+
+def get_raw_quote(db: Session, checksum: str):
+    rec = db.query(models.RawQuoteModel).filter(models.RawQuoteModel.checksum == checksum).first()
+    if rec:
+        return rec
+    return None

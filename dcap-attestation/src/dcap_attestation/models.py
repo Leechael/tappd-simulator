@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, BLOB, DateTime, Enum, Text, Boolean
+from sqlalchemy import Column, Integer, String, BLOB, DateTime, Enum, Text, Boolean, LargeBinary, Index
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 import enum
+from datetime import datetime
 
 from .quote import Quote, QuoteHeader, QuoteBody, AttestationKeyType as AKT, TeeType as TT
 
@@ -87,3 +88,19 @@ class QuoteModel(Base):
             body=body,
             verified=self.verified
         )
+
+class RawQuoteModel(Base):
+    __tablename__ = "raw_quotes"
+
+    id = Column(Integer, primary_key=True)
+    checksum = Column(String(64), nullable=False, unique=True)
+    content = Column(LargeBinary, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    __table_args__ = (
+        Index('idx_checksum', checksum),
+    )
+
+    def __repr__(self):
+        return f"<RawQuote(id={self.id}, checksum='{self.checksum}')>"
+

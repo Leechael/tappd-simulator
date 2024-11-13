@@ -2,7 +2,7 @@ from typing import Optional
 
 import uvicorn
 from fastapi import FastAPI, File, UploadFile, Depends, HTTPException
-from fastapi.responses import PlainTextResponse, JSONResponse
+from fastapi.responses import PlainTextResponse, JSONResponse, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -18,14 +18,9 @@ class VerificationResponse(BaseModel):
     checksum: Optional[str] = None
 
 
-app = FastAPI()
+app = FastAPI(root_path='/api/attestations')
 
-@app.get('/')
-def home():
-    return PlainTextResponse('hello world')
-
-
-@app.post('/api/attestations/verify')
+@app.post('/verify')
 async def verify(file: UploadFile = File(...), db: Session = Depends(get_db)):
     content = await file.read()
     succeed, quote = Quote.safeParse(content)
@@ -33,10 +28,11 @@ async def verify(file: UploadFile = File(...), db: Session = Depends(get_db)):
     if record.success:
         quote.verified = verify_quote_with_collateral(content)
         row = crud.create_quote(db, quote)
+        crud.save_raw_quote(db, row, content)
         record.checksum = row.checksum
     return JSONResponse(content=record.dict())
 
-@app.get('/api/attestations/recent')
+@app.get('/recent')
 async def recent(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     rows = crud.get_quotes(db, skip, limit)
     return JSONResponse(content=[{
@@ -44,10 +40,37 @@ async def recent(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
         "created_at": row.created_at.isoformat(),
     } for row in rows])
     
-@app.get('/api/attestations/view/{checksum}')
+@app.get('/view/{checksum}')
 async def view(checksum: str, db: Session = Depends(get_db)):
     row = crud.get_quote(db, checksum)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
-    print(row.to_instance())
     return JSONResponse(content=row.to_instance().dict())
+
+
+@app.get('/raw/{checksum}')
+async def get_raw(checksum: str, db: Session = Depends(get_db)):
+    row = crud.get_raw_quote(db, checksum)
+    if not row:
+        raise HTTPException(status_code=404, detail='Not found')
+    return Response(
+        content=row.content,
+        media_type="application/octet-stream",
+        headers={
+            "Content-Disposition": f"attachment; filename={checksum}.bin",
+            "Content-Length": str(len(row.content))
+        }
+    )
+
+@app.head("/raw/{checksum}")
+async def check_raw_file(checksum: str, db: Session = Depends(get_db)):
+    row = crud.get_raw_quote(db, checksum)
+    if not row:
+        raise HTTPException(status_code=404, detail='Not found')
+    return Response(
+        content=None,
+        headers={
+            "Content-Length": str(len(row.content))
+        }
+    )
+
