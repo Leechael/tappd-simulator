@@ -16,7 +16,7 @@ class VerificationResponse(BaseModel):
     success: bool
     quote: Optional[Quote] = None
     checksum: Optional[str] = None
-    can_download: bool
+    can_download: Optional[bool] = None
 
 
 app = FastAPI(root_path='/api/attestations')
