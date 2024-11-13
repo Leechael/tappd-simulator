@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String, BLOB, DateTime, Enum, Text, Boolean, LargeBinary, Index
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from sqlalchemy.ext.hybrid import hybrid_property
 import enum
 from datetime import datetime
 
@@ -56,6 +58,23 @@ class QuoteModel(Base):
     checksum = Column(String)
     verified = Column(Boolean)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    raw_quote = relationship(
+        "RawQuoteModel",
+        primaryjoin="and_(foreign(QuoteModel.checksum) == RawQuoteModel.checksum)",
+        uselist=False,
+        viewonly=True,
+    )
+
+    @hybrid_property
+    def has_raw_quote(self):
+        # Instance-level check (Python side)
+        return self.raw_quote is not None
+
+    @has_raw_quote.expression
+    def has_raw_quote(cls):
+        # SQL-level check (Database side)
+        return exists().where(RawQuoteModel.checksum == cls.checksum)
 
     def to_instance(self):
         header = QuoteHeader(

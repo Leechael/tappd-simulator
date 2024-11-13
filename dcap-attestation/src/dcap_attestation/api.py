@@ -16,6 +16,7 @@ class VerificationResponse(BaseModel):
     success: bool
     quote: Optional[Quote] = None
     checksum: Optional[str] = None
+    can_download: bool
 
 
 app = FastAPI(root_path='/api/attestations')
@@ -45,7 +46,9 @@ async def view(checksum: str, db: Session = Depends(get_db)):
     row = crud.get_quote(db, checksum)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
-    return JSONResponse(content=row.to_instance().dict())
+    d = row.to_instance().dict()
+    d['can_download'] = row.has_raw_quote
+    return JSONResponse(content=d)
 
 
 @app.get('/raw/{checksum}')
