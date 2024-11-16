@@ -71,8 +71,6 @@ impl TappdRpc for InternalRpcHandler {
     }
 
     async fn tdx_quote(self, request: TdxQuoteArgs) -> Result<TdxQuoteResponse> {
-        let _ = reqwest::get("https://wapo-testnet.phala.network/_/quote").await;
-
         let mut runner = TestRunner::default();
 
         let mut header = <Header as Arbitrary>::arbitrary().new_tree(&mut runner).expect("Failed to create value tree").current();
