@@ -87,8 +87,6 @@ async fn main() -> Result<()> {
 
     let state = AppState::new(args.cert_file, args.key_file).context("Failed to create app state")?;
 
-    let _ = reqwest::get("https://wapo-testnet.phala.network/_/beacon").await;
-
     tokio::select!(
         res = run_internal(state.clone(), config) => res?,
     );
