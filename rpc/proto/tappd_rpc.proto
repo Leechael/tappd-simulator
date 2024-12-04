@@ -19,6 +19,8 @@ message DeriveKeyArgs {
   string path = 1;
   // Subject of the certificate to request
   string subject = 2;
+  // DNS alternative names for the certificate
+  repeated string alt_names = 3;
 }
 
 // The response to a DeriveKey request
@@ -30,9 +32,24 @@ message DeriveKeyResponse {
 }
 
 // The request to get a TDX quote
+// The report data is prefixed with `app-data:` before hashing unless the algorithm is `raw`.
+// Final report data is hash(`app-data:` + report_data) if the algorithm is not `raw`.
 message TdxQuoteArgs {
   // Report data
   bytes report_data = 1;
+  // The hash algorithm to use to process the report data. Default is `sha512`.
+  // Supported algorithms are:
+  // - `sha256`
+  // - `sha384`
+  // - `sha512`
+  // - `sha3-256`
+  // - `sha3-384`
+  // - `sha3-512`
+  // - `keccak256`
+  // - `keccak384`
+  // - `keccak512`
+  // - `raw`: Passes the report_data directly to the driver without any processing
+  string hash_algorithm = 2;
 }
 
 message TdxQuoteResponse {
@@ -40,45 +57,4 @@ message TdxQuoteResponse {
   bytes quote = 1;
   // Event log
   string event_log = 2;
-}
-
-
-service Worker {
-  // Get worker info
-  rpc Info(google.protobuf.Empty) returns (WorkerInfo) {}
-  // Get worker containers
-  rpc ListContainers(google.protobuf.Empty) returns (ListContainersResponse) {}
-}
-
-message ListContainersResponse {
-  repeated Container containers = 1;
-}
-
-message Container {
-  // The ID of this container
-  string id = 1;
-  // The names that this container has been given
-  repeated string names = 2;
-  // The name of the image used when creating this container
-  string image = 3;
-  // The ID of the image that this container was created from
-  string image_id = 4;
-  // Command to run when starting the container
-  string command = 5;
-  // When the container was created
-  int64 created = 6;
-  // The state of this container (e.g. Exited)
-  string state = 7;
-  // The status of this container (e.g. Exited)
-  string status = 8;
-}
-
-// The request to derive a key
-message WorkerInfo {
-  // Worker ID
-  string app_id = 1;
-  // App certificate
-  string app_cert = 2;
-  // TCB info
-  string tcb_info = 3;
 }

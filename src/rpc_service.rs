@@ -7,7 +7,7 @@ use proptest::{
     test_runner::TestRunner,
 };
 use scale::Encode;
-use dcap_qvl::quote::{Header, TDReport10, AuthDataV4};
+use dcap_qvl::quote::{AuthDataV4, Header, TDReport10, TdxEventLogs};
 use tappd_rpc::{
     tappd_server::{TappdRpc, TappdServer},
     // Container,
@@ -16,6 +16,7 @@ use tappd_rpc::{
     TdxQuoteArgs,
     TdxQuoteResponse,
 };
+use sha2::Digest;
 
 use crate::{
     rpc_call::RpcCall,
@@ -56,6 +57,7 @@ impl TappdRpc for InternalRpcHandler {
                 .context("Failed to derive key")?;
         let req = CertRequest::builder()
             .subject(&request.subject)
+            .alt_names(&request.alt_names)
             .key(&derived_key)
             .build();
         let cert = self
@@ -73,6 +75,13 @@ impl TappdRpc for InternalRpcHandler {
     async fn tdx_quote(self, request: TdxQuoteArgs) -> Result<TdxQuoteResponse> {
         let mut runner = TestRunner::default();
 
+        let params = Default::default();
+        let event_logs = <TdxEventLogs as Arbitrary>::arbitrary_with(params)
+            .new_tree(&mut runner)
+            .expect("Failed to create event_logs")
+            .current();
+        let rtmrs = event_logs.get_rtmr();
+
         let mut header = <Header as Arbitrary>::arbitrary().new_tree(&mut runner).expect("Failed to create value tree").current();
         // TODO: the python decoder not a full implementation.
         header.version = 4;
@@ -83,7 +92,11 @@ impl TappdRpc for InternalRpcHandler {
             .new_tree(&mut runner)
             .expect("Failed to create value tree")
             .current();
-        body.report_data = sha2_512(&request.report_data);
+        body.rt_mr0 = rtmrs[0];
+        body.rt_mr1 = rtmrs[1];
+        body.rt_mr2 = rtmrs[2];
+        body.rt_mr3 = rtmrs[3];
+        body.report_data = to_report_data_with_hash(&request.report_data, &request.hash_algorithm)?;
 
         let mut encoded = Vec::new();
         encoded.extend(header.encode());
@@ -99,7 +112,7 @@ impl TappdRpc for InternalRpcHandler {
 
         Ok(TdxQuoteResponse {
             quote: encoded,
-            event_log: String::from("mock_event_log"),
+            event_log: event_logs.to_json().unwrap_or_default(),
         })
     }
 }
@@ -122,9 +135,35 @@ impl RpcCall<AppState> for InternalRpcHandler {
     }
 }
 
-fn sha2_512(data: &[u8]) -> [u8; 64] {
-    use sha2::{Digest, Sha512};
-    let mut hasher = Sha512::new();
-    hasher.update(data);
-    hasher.finalize().into()
+fn to_report_data_with_hash(content: &[u8], hash: &str) -> Result<[u8; 64]> {
+    macro_rules! do_hash {
+        ($hash: ty) => {{
+            // The format is:
+            // hash(<tag>:<content>)
+            let mut hasher = <$hash>::new();
+            hasher.update("app-data".as_bytes());
+            hasher.update(b":");
+            hasher.update(content);
+            let output = hasher.finalize();
+
+            let mut padded = [0u8; 64];
+            padded[..output.len()].copy_from_slice(&output);
+            padded
+        }};
+    }
+    let output = match hash {
+        "sha256" => do_hash!(sha2::Sha256),
+        "sha384" => do_hash!(sha2::Sha384),
+        // Default to sha512
+        "" | "sha512" => do_hash!(sha2::Sha512),
+        "sha3-256" => do_hash!(sha3::Sha3_256),
+        "sha3-384" => do_hash!(sha3::Sha3_384),
+        "sha3-512" => do_hash!(sha3::Sha3_512),
+        "keccak256" => do_hash!(sha3::Keccak256),
+        "keccak384" => do_hash!(sha3::Keccak384),
+        "keccak512" => do_hash!(sha3::Keccak512),
+        "raw" => content.try_into().ok().context("invalid content length")?,
+        _ => anyhow::bail!("invalid hash algorithm"),
+    };
+    Ok(output)
 }
