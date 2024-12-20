@@ -50,7 +50,7 @@ async def view(checksum: str, db: Session = Depends(get_db)):
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
     d = row.to_instance().dict()
-    d['uploaded_at'] = row.created_at.isoformat
+    d['uploaded_at'] = row.created_at.isoformat()
     d['checksum'] = row.checksum
     d['can_download'] = row.has_raw_quote
     return JSONResponse(content=d)
