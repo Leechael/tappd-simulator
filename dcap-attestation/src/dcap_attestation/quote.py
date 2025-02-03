@@ -1,7 +1,9 @@
 from typing import Optional
 
 from pydantic import BaseModel, field_serializer
-from evidence_api.tdx.quote import TdxQuote, AttestationKeyType, TeeType, TdxQuoteTeeTcbSvn, TdxQuoteTeeTcbSvn, TdxQuoteTeeTcbSvn, TdxQuoteTeeTcbSvn
+from evidence_api.tdx.quote import TdxQuote, AttestationKeyType, TeeType
+
+from .cert import parse_certificate_chain
 
 """
 Wrap TdxQuote into Human-friendly & serializable object for Web
@@ -97,3 +99,7 @@ class Quote(BaseModel):
         except Exception as err:
             print(err)
             return (False, None)
+
+    @property
+    def certificate_chain(self):
+        return parse_certificate_chain(self.cert_data)

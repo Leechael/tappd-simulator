@@ -76,7 +76,7 @@ class QuoteModel(Base):
         # SQL-level check (Database side)
         return exists().where(RawQuoteModel.checksum == cls.checksum)
 
-    def to_instance(self):
+    def to_instance(self) -> Quote:
         header = QuoteHeader(
             version=self.version,
             ak_type=self.ak_type.to_instance(),
