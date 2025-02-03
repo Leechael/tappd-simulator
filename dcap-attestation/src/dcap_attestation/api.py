@@ -102,6 +102,9 @@ async def get_collateral(checksum: str, db: Session = Depends(get_db)):
         content=collateral.model_dump(),
         headers={
             'Cache-Control': 'public, max-age=86400',  # 1 day
+            'CDN-Cache-Control': 'public, max-age=86400',
+            'Vary': 'Accept-Encoding',
+            'ETag': f'"{checksum}"',
         }
     )
 
