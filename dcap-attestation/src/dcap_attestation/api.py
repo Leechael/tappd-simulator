@@ -65,7 +65,7 @@ async def view(checksum: str, db: Session = Depends(get_db)):
     d['can_download'] = row.has_raw_quote
     return JSONResponse(content=d)
 
-@app.get('/collateral/{checksum}')
+@app.get('/collateral/{checksum}.json')
 async def get_collateral(checksum: str, db: Session = Depends(get_db)):
     row = crud.get_quote(db, checksum)
     if not row:
