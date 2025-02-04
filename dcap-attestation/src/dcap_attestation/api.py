@@ -1,5 +1,6 @@
 from typing import Optional
 import json
+from urllib.parse import unquote
 
 import asyncio
 import httpx
@@ -75,14 +76,16 @@ async def get_collateral(checksum: str, db: Session = Depends(get_db)):
     async def get_tcb_from_fmspc(fmspc):
         async with httpx.AsyncClient() as client:
             resp = await client.get(f'https://api.trustedservices.intel.com/tdx/certification/v4/tcb?fmspc={fmspc}')
-            tcb_info_issuer_chain = resp.headers.get('TCB-Info-Issuer-Chain')
-            return (tcb_info_issuer_chain, resp.json())
+            tcb_info_issuer_chain = resp.headers.get('SGX-TCB-Info-Issuer-Chain')
+            if not tcb_info_issuer_chain:
+                tcb_info_issuer_chain = resp.headers.get('TCB-Info-Issuer-Chain')
+            return (unquote(tcb_info_issuer_chain), resp.json())
 
     async def get_qe_identity():
         async with httpx.AsyncClient() as client:
             resp = await client.get('https://api.trustedservices.intel.com/tdx/certification/v4/qe/identity')
             qe_identity_issuer_chain = resp.headers.get('SGX-Enclave-Identity-Issuer-Chain')
-            return (qe_identity_issuer_chain, resp.json())
+            return (unquote(qe_identity_issuer_chain), resp.json())
 
     ((tcb_info_issuer_chain, tcb_info), (qe_identity_issuer_chain, qe_identity)) = await asyncio.gather(
         get_tcb_from_fmspc(quote.certificate_chain[0].sgx_extensions.fmspc),
