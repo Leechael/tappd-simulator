@@ -71,11 +71,6 @@ class QuoteModel(Base):
         # Instance-level check (Python side)
         return self.raw_quote is not None
 
-    @has_raw_quote.expression
-    def has_raw_quote(cls):
-        # SQL-level check (Database side)
-        return exists().where(RawQuoteModel.checksum == cls.checksum)
-
     def to_instance(self) -> Quote:
         header = QuoteHeader(
             version=self.version,

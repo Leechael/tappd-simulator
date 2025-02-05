@@ -44,7 +44,7 @@ async def verify(file: UploadFile = File(...), db: Session = Depends(get_db)):
         row = crud.create_quote(db, quote)
         crud.save_raw_quote(db, row, content)
         record.checksum = row.checksum
-    return JSONResponse(content=record.dict())
+    return JSONResponse(content=record.model_dump())
 
 @app.get('/recent')
 async def recent(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
@@ -63,7 +63,7 @@ async def view(checksum: str, db: Session = Depends(get_db)):
     d = row.to_instance().dict()
     d['uploaded_at'] = row.created_at.isoformat()
     d['checksum'] = row.checksum
-    d['can_download'] = row.has_raw_quote
+    d['can_download'] = True
     return JSONResponse(content=d)
 
 @app.get('/collateral/{checksum}')
