@@ -94,10 +94,10 @@ async def get_collateral(checksum: str, db: Session = Depends(get_db)):
 
     collateral = QuoteCollateralV3(
         tcb_info_issuer_chain=tcb_info_issuer_chain,
-        tcb_info=json.dumps(tcb_info.get('tcbInfo')),
+        tcb_info=json.dumps(tcb_info.get('tcbInfo'), separators=(',', ':')),
         tcb_info_signature=tcb_info.get('signature'),
         qe_identity_issuer_chain=qe_identity_issuer_chain,
-        qe_identity=json.dumps(qe_identity.get('enclaveIdentity')),
+        qe_identity=json.dumps(qe_identity.get('enclaveIdentity'), separators=(',', ':')),
         qe_identity_signature=qe_identity.get('signature'),
     )
 
