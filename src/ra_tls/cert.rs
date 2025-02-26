@@ -97,7 +97,7 @@ pub struct CertRequest<'a> {
     app_info: Option<&'a [u8]>,
 }
 
-impl<'a> CertRequest<'a> {
+impl CertRequest<'_> {
     fn into_cert_params(self) -> Result<CertificateParams> {
         let mut params = CertificateParams::new(vec![])?;
         let mut dn = DistinguishedName::new();
