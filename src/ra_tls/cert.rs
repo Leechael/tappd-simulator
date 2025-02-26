@@ -57,7 +57,7 @@ impl CaCert {
     pub fn sign(&self, req: CertRequest) -> Result<Certificate> {
         let key = req.key;
         let params = req.into_cert_params()?;
-        let cert = params.signed_by(&key, &self.cert, &self.key)?;
+        let cert = params.signed_by(key, &self.cert, &self.key)?;
         Ok(cert)
     }
 
