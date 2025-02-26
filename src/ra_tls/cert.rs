@@ -57,7 +57,7 @@ impl CaCert {
     pub fn sign(&self, req: CertRequest) -> Result<Certificate> {
         let key = req.key;
         let params = req.into_cert_params()?;
-        let cert = params.signed_by(&key, &self.cert, &self.key)?;
+        let cert = params.signed_by(key, &self.cert, &self.key)?;
         Ok(cert)
     }
 
@@ -97,7 +97,7 @@ pub struct CertRequest<'a> {
     app_info: Option<&'a [u8]>,
 }
 
-impl<'a> CertRequest<'a> {
+impl CertRequest<'_> {
     fn into_cert_params(self) -> Result<CertificateParams> {
         let mut params = CertificateParams::new(vec![])?;
         let mut dn = DistinguishedName::new();

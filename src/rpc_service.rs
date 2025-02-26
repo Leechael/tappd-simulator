@@ -75,8 +75,8 @@ impl TappdRpc for InternalRpcHandler {
     async fn tdx_quote(self, request: TdxQuoteArgs) -> Result<TdxQuoteResponse> {
         let mut runner = TestRunner::default();
 
-        let params = Default::default();
-        let event_logs = <TdxEventLogs as Arbitrary>::arbitrary_with(params)
+        #[allow(clippy::unit_arg)]
+        let event_logs = <TdxEventLogs as Arbitrary>::arbitrary_with(Default::default())
             .new_tree(&mut runner)
             .expect("Failed to create event_logs")
             .current();
